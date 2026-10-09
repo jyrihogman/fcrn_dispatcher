@@ -1,6 +1,6 @@
 # Docs
 
-Status: ready-for-agent
+Status: resolved
 Blocked by: 06
 TDD: no
 
@@ -26,3 +26,10 @@ Write in plain English: one idea per sentence, active voice, no idioms, no em-da
 - Every row of the assignment map names a module and a test that exist.
 - The Mermaid diagram renders on GitHub.
 - The standard check passes.
+
+## Answer
+
+- `README.md`: the ten sections from the README outline, in order. The Quick start output is pasted from a real `--fast` run on a clean clone. The SoC range (0.456 to 0.500, ending at 0.498) comes from that run's rows in Postgres.
+- Quick start needs `yoyo apply --batch --database postgresql+psycopg://...`. The repo has no `yoyo.ini`, and yoyo needs the `+psycopg` scheme because psycopg2 is not installed. The README also says what to do when another Postgres holds port 5432.
+- `docs/architecture.md`: one Mermaid flowchart with the loop-factory seam as the enclosing subgraph, then notes on the three tasks and the three seams. It renders with mermaid-cli.
+- Acceptance: every module and test in the assignment map exists. The standard check passes, with 61 tests including the 2 integration tests.
