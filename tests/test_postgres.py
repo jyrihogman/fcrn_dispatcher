@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -65,3 +66,35 @@ def test_write_batch_stores_samples_that_read_back_by_run_id(database_url: str) 
             return [Sample(*row) for row in await cursor.fetchall()]
 
     assert asyncio.run(write_two_runs_and_read_one()) == samples
+
+
+def test_a_cancelled_write_stores_nothing_and_the_connection_can_write_again(
+    database_url: str,
+) -> None:
+    """The runtime writes a cancelled batch again on the same connection, so the
+    cancel must roll the whole batch back and leave the connection usable."""
+    samples = [
+        Sample(START + timedelta(seconds=tick / 10), 50.0, 0.0, 0.0, 0.5)
+        for tick in range(300_000)
+    ]
+    run_id = uuid4()
+
+    async def cancel_a_write_then_write_again() -> int:
+        async with await psycopg.AsyncConnection.connect(
+            database_url, autocommit=True
+        ) as conn:
+            write_batch = postgres_store(conn, run_id)
+            first = asyncio.ensure_future(write_batch(samples))
+            await asyncio.sleep(0.05)
+            first.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await first
+            assert first.cancelled(), "the first write ended before the cancel"
+            await write_batch(samples)
+            cursor = await conn.execute(
+                "SELECT count(*) FROM samples WHERE run_id = %s", (run_id,)
+            )
+            (count,) = await cursor.fetchone() or (0,)
+            return count
+
+    assert asyncio.run(cancel_a_write_then_write_again()) == len(samples)
