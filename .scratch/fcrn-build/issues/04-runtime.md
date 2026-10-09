@@ -1,6 +1,6 @@
 # Runtime
 
-Status: ready-for-agent
+Status: resolved
 Blocked by: 02, 03
 TDD: yes
 
@@ -35,3 +35,11 @@ Tests:
 - The full step test passes on looptime in a few seconds of real time.
 - No test uses the real clock.
 - The standard check passes.
+
+## Answer
+
+- `src/fcrn_dispatcher/runtime.py`: `fast_loop`, `wall_clock`, `latest`, `produce`, `control`, `write` and `run`. There is no default-loop factory: `asyncio.Runner(loop_factory=None)` already gives the default loop.
+- Control runs exactly `round(duration / 0.1)` ticks, so it ends after the tick at 1259.9 s. No sample at 1260 s can race the producer's last timer. Then the TaskGroup waits for the producer, so the run still ends when the schedule ends.
+- The writer keeps the batch it is writing. A cancel can stop `write_batch` partway, so `finally` writes that batch again with the backlog. A slow-store case of the fail-stop test found this: without it, 6,990 of 7,000 samples reached the store. This assumes a cancelled `write_batch` stores nothing, which holds for a COPY inside one transaction (ticket 05).
+- Tests: `tests/conftest.py` (fake store), `tests/test_runtime.py` (wall clock, fail-stop with a fast and a slow store) and the full step test in `tests/test_step_test.py`. The full suite runs in about 2.5 s.
+- `uv run ty check` with no paths also scans `.claude/worktrees/`. Check with `uv run ty check src tests` while a parallel worktree exists.

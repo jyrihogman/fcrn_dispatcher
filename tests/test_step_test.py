@@ -1,10 +1,14 @@
+import asyncio
 from bisect import bisect_right
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from itertools import accumulate
 
 import pytest
 
+from fcrn_dispatcher.battery import simulated_battery
+from fcrn_dispatcher.droop import droop
+from fcrn_dispatcher.runtime import fast_loop, run
 from fcrn_dispatcher.sample import Sample
 from fcrn_dispatcher.step_test import (
     DOWN_BOUNDS,
@@ -15,6 +19,8 @@ from fcrn_dispatcher.step_test import (
 )
 
 C = 1_000_000.0
+PMAX_W = 1_340_000.0
+CAPACITY_WH = 2_000_000.0
 START = datetime(2026, 1, 1, tzinfo=UTC)
 STEP_ENDS = list(accumulate(duration for _, duration in STEP_TEST))
 STEP_STARTS = [0, *STEP_ENDS[:-1]]
@@ -116,3 +122,28 @@ def test_requirement_1_passes_just_inside_and_fails_just_outside_each_bound(
         UP_BOUNDS[0] <= up <= UP_BOUNDS[1] and DOWN_BOUNDS[0] <= down <= DOWN_BOUNDS[1]
     )
     assert in_bounds is passes
+
+
+def test_full_step_test_on_the_simulated_battery_passes_requirement_1(
+    stored: list[Sample], write_batch: Callable[[list[Sample]], Awaitable[None]]
+) -> None:
+    """The 1260 s step test runs on looptime and must deliver droop(f) at every sample."""
+
+    async def scenario() -> None:
+        await run(
+            STEP_TEST, simulated_battery(CAPACITY_WH, PMAX_W, 0.5), C, write_batch
+        )
+
+    with asyncio.Runner(loop_factory=fast_loop) as runner:
+        runner.run(scenario())
+
+    assert len(stored) == 12_600
+    for s in stored:
+        assert abs(s.commanded_w) <= C
+        assert abs(s.actual_w) <= PMAX_W
+        assert 0.0 <= s.soc <= 1.0
+        assert s.actual_w == pytest.approx(s.commanded_w, abs=1)
+        assert s.commanded_w == pytest.approx(droop(s.frequency_hz, C), abs=1)
+    up, down = requirement_1(*steady_state_response(stored), C)
+    assert UP_BOUNDS[0] <= up <= UP_BOUNDS[1]
+    assert DOWN_BOUNDS[0] <= down <= DOWN_BOUNDS[1]
