@@ -26,7 +26,7 @@ The build is a separate effort, [fcrn-build](../../fcrn-build/spec.md). It has o
 | 01 | Scaffold: commit the planning work, then `uv init --package`, deps, `.env.example`, `test_imports.py` | | no |
 | 02 | Pure core: `droop.py`, `sample.py`, `battery.py`, property and example tests | 01 | yes |
 | 03 | Step-test analysis: `step_test.py` on hand-built samples | 01 | yes |
-| 04 | Runtime: `runtime.py`, fake store, fail-stop test, full 12,601-sample step test | 02, 03 | yes |
+| 04 | Runtime: `runtime.py`, fake store, fail-stop test, full 12,600-sample step test | 02, 03 | yes |
 | 05 | Store: migrations, `store.py`, testcontainers test | 02 | yes |
 | 06 | Settings and CLI: `settings.py`, `__main__.py`, `--fast` against local Postgres | 04, 05 | no |
 | 07 | Docs: `README.md` with real `--fast` output, `docs/architecture.md` | 06 | no |

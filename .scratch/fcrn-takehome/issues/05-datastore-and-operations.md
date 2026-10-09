@@ -16,7 +16,7 @@ Decide:
 
 ## Comments
 
-- From Runtime and clock design: the writer task calls a sync `write_batch(list[Sample])` with everything on the queue. A sync write blocks the loop, so decide if it runs in a thread (`asyncio.to_thread`). Note that looptime runs thread work in zero fake time. The writer also flushes on cancel. `Sample.at` is a UTC `datetime`, built from a wall anchor plus loop time. The step test writes 12,601 samples.
+- From Runtime and clock design: the writer task calls a sync `write_batch(list[Sample])` with everything on the queue. A sync write blocks the loop, so decide if it runs in a thread (`asyncio.to_thread`). Note that looptime runs thread work in zero fake time. The writer also flushes on cancel. `Sample.at` is a UTC `datetime`, built from a wall anchor plus loop time. The step test writes 12,600 samples.
 - Store decided (grilling session): plain Postgres on RDS. Timescale is not on RDS, because its TSL licence blocks AWS from hosting it. InfluxDB 3 Core on Timestream has no compaction and limits queries to about 72 h, so it is weak for long history. FCR-N samples must last for months, and Postgres handles 10 rows/s per battery easily. The README names Timescale (Tiger Cloud or self-hosted) as the step for fleet scale.
 
 ## Answer
