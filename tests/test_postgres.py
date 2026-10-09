@@ -12,7 +12,7 @@ from testcontainers.community.postgres import PostgresContainer
 from yoyo import get_backend, read_migrations
 
 from fcrn_dispatcher.sample import Sample
-from fcrn_dispatcher.store import postgres_store
+from fcrn_dispatcher.store import postgres_store, read_samples
 
 pytestmark = pytest.mark.integration
 
@@ -58,12 +58,7 @@ def test_write_batch_stores_samples_that_read_back_by_run_id(database_url: str) 
         ) as conn:
             await postgres_store(conn, run_id)(samples)
             await postgres_store(conn, uuid4())(samples[:2])
-            cursor = await conn.execute(
-                "SELECT at, frequency_hz, commanded_w, actual_w, soc"
-                " FROM samples WHERE run_id = %s ORDER BY at",
-                (run_id,),
-            )
-            return [Sample(*row) for row in await cursor.fetchall()]
+            return await read_samples(conn, run_id)
 
     assert asyncio.run(write_two_runs_and_read_one()) == samples
 

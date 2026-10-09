@@ -8,10 +8,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
     database_url: str
-    fcrn_capacity_w: float = Field(1_000_000.0, gt=0)
-    battery_max_power_w: float = Field(1_340_000.0, gt=0)
-    battery_energy_wh: float = Field(2_000_000.0, gt=0)
-    battery_initial_soc: float = Field(0.5, ge=0, le=1)
+    fcrn_capacity_w: float = Field(gt=0)
+    battery_max_power_w: float = Field(gt=0)
+    battery_energy_wh: float = Field(gt=0)
+    battery_initial_soc: float = Field(ge=0, le=1)
 
     @model_validator(mode="after")
     def max_power_covers_capacity(self) -> Self:

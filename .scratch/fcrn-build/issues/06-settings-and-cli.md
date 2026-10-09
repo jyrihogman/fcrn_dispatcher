@@ -35,8 +35,8 @@ With a local Postgres (`docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=dev post
 
 ## Answer
 
-- `src/fcrn_dispatcher/settings.py`: `Settings` with `env_file=".env"`. `DATABASE_URL` is required. The four sizing vars default to the `.env.example` values and must be positive. SoC must lie in [0, 1]. A model validator rejects `BATTERY_MAX_POWER_W < FCRN_CAPACITY_W`.
-- `src/fcrn_dispatcher/__main__.py`: `main()` parses `--fast`, loads `Settings`, prints the run id, runs `STEP_TEST` into Postgres and reads the run's samples back on the same connection. It prints both ratios, appends ` FAIL` to a line out of bounds and exits 1.
+- `src/fcrn_dispatcher/settings.py`: `Settings` with `env_file=".env"`. Every var is required, so `.env.example` holds the only copy of the sizing values. The sizing values must be positive. SoC must lie in [0, 1]. A model validator rejects `BATTERY_MAX_POWER_W < FCRN_CAPACITY_W`.
+- `src/fcrn_dispatcher/__main__.py`: `main()` parses `--fast`, loads `Settings`, prints the run id, runs `STEP_TEST` into Postgres and reads the run's samples back with `store.read_samples`. The Postgres test uses the same function. It prints both ratios, appends ` FAIL` to a line out of bounds and exits 1.
 - `tests/test_settings.py`: the three tests. They set env vars with `monkeypatch` and pass `_env_file=None`, so they never read `.env`.
 - Acceptance: `uv run fcrn-dispatcher --fast` and `python -m fcrn_dispatcher --fast` both print `+0.000` for up and down and exit 0 in about 4.5 s. Each run stored 12,600 rows. `BATTERY_ENERGY_WH=10000` drains the battery and gives `up: -1.000 ... FAIL`, `down: +1.000 ... FAIL`, exit 1.
 - Postgres.app on macOS also listens on `localhost:5432` and accepts the `.env.example` URL. The `docker run -p 5432:5432` container then never receives the connection. Docs should mention it or use another port.

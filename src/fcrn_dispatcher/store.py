@@ -25,3 +25,12 @@ def postgres_store(
                 )
 
     return write_batch
+
+
+async def read_samples(conn: AsyncConnection, run_id: UUID) -> list[Sample]:
+    cursor = await conn.execute(
+        "SELECT at, frequency_hz, commanded_w, actual_w, soc"
+        " FROM samples WHERE run_id = %s ORDER BY at",
+        (run_id,),
+    )
+    return [Sample(*row) for row in await cursor.fetchall()]

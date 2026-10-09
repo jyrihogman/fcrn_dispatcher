@@ -15,7 +15,7 @@ from fcrn_dispatcher.step_test import (
     requirement_1,
     steady_state_response,
 )
-from fcrn_dispatcher.store import postgres_store
+from fcrn_dispatcher.store import postgres_store, read_samples
 
 
 async def run_step_test(settings: Settings, run_id: UUID) -> list[Sample]:
@@ -31,12 +31,7 @@ async def run_step_test(settings: Settings, run_id: UUID) -> list[Sample]:
         await run(
             STEP_TEST, battery, settings.fcrn_capacity_w, postgres_store(conn, run_id)
         )
-        cursor = await conn.execute(
-            "SELECT at, frequency_hz, commanded_w, actual_w, soc"
-            " FROM samples WHERE run_id = %s ORDER BY at",
-            (run_id,),
-        )
-        return [Sample(*row) for row in await cursor.fetchall()]
+        return await read_samples(conn, run_id)
 
 
 def main() -> None:
