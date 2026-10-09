@@ -27,3 +27,8 @@ With a local Postgres (`docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=dev post
 - `python -m fcrn_dispatcher --fast` does the same.
 - The `samples` table holds 12,600 rows for that run id.
 - The standard check passes.
+
+## Comments
+
+- From Store: open the `AsyncConnection` with `autocommit=True`. `write_batch` wraps each `COPY` in `conn.transaction()`. Without autocommit, any earlier query opens a transaction, the `COPY` runs in a savepoint, and nothing commits until the connection closes.
+- From Store: yoyo needs the `postgresql+psycopg://` scheme, and psycopg needs `postgresql://`. Example: `yoyo apply --database postgresql+psycopg://postgres:dev@localhost:5432/postgres migrations`. `.env.example` keeps the psycopg form for `DATABASE_URL`.
