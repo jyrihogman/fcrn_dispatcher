@@ -25,5 +25,5 @@ With a local Postgres (`docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=dev post
 
 - `uv run fcrn-dispatcher --fast` prints both ratios and exits 0.
 - `python -m fcrn_dispatcher --fast` does the same.
-- The `samples` table holds 12,601 rows for that run id.
+- The `samples` table holds 12,600 rows for that run id.
 - The standard check passes.
