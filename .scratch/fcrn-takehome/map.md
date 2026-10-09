@@ -9,7 +9,7 @@ Every design decision for the take-home is made. An ordered list of build tasks,
 ## Notes
 
 - Sources: `FCR-N Droop Take-Home Assignment.pdf` and the appendix PDF. Only §3.1.1 and Table 3 are required. §3.5 Table 10 is used for battery sizing.
-- Stack: Python 3.12+, `uv`, `asyncio`, pytest, hypothesis, ruff, ty.
+- Stack: Python 3.15+, `uv`, `asyncio`, pytest, hypothesis, ruff, ty.
 - Python style: functional as much as possible. Prefer pure functions. Use a class only where it is absolutely needed.
 - The step test also checks Requirement 1 (steady-state response within −5% / +20%).
 - Sizing follows the Table 10 LER rules.

@@ -1,0 +1,42 @@
+[project]
+name = "fcrn-dispatcher"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jyri Högman", email = "jyrihogman@gmail.com" }
+]
+requires-python = ">=3.15"
+dependencies = [
+    "looptime>=0.7",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.15.0",
+    "yoyo-migrations>=9.0.0",
+]
+
+[project.scripts]
+fcrn-dispatcher = "fcrn_dispatcher.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.168.5",
+    "pytest>=9.1.1",
+    "ruff>=0.17.0",
+    "testcontainers>=4.15.0",
+    "ty>=0.0.85",
+]
+
+[tool.ruff]
+extend-exclude = [".scratch"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--ignore=.scratch", "-p", "no:looptime_plugin"]
+markers = ["integration: needs Docker for the testcontainers Postgres"]
+
+[tool.ty.src]
+exclude = [".scratch"]
