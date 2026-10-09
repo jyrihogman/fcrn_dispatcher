@@ -1,6 +1,6 @@
 # Store
 
-Status: ready-for-agent
+Status: resolved
 Blocked by: 02
 TDD: yes
 
@@ -26,3 +26,10 @@ Test in `tests/test_postgres.py`, marked `integration`: start Postgres 17 with t
 - `uv run pytest -m integration` passes with Docker running, and skips with Docker stopped.
 - `yoyo apply` and `yoyo rollback` both work against a local `postgres:17`.
 - The standard check passes.
+
+## Answer
+
+- `migrations/0001.create-samples.sql` creates `samples` with all six columns `NOT NULL`, a BRIN index on `at` and a B-tree on `(run_id, at)`. The rollback file drops the table.
+- `store.py` has `postgres_store(conn, run_id)`. It returns an async `write_batch` that sends one `COPY` per batch inside `conn.transaction()`. The caller opens the connection with `autocommit=True`. Without autocommit, psycopg turns `conn.transaction()` into a savepoint after any earlier query, and the batch stays uncommitted.
+- `tests/test_postgres.py` starts `postgres:17` with testcontainers and applies the migrations through yoyo's Python API. It writes two runs with the same timestamps and reads one back by `run_id`. It skips when the `PostgresContainer` constructor cannot reach the Docker daemon. A failed image pull still fails the test.
+- I ran `yoyo apply`, `yoyo rollback` and a second `yoyo apply` against `postgres:17` with `postgresql+psycopg://`. All three worked. I pointed `DOCKER_HOST` at a missing socket, and the test skipped.
