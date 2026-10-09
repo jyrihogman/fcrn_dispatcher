@@ -13,6 +13,7 @@ This effort builds the take-home. Every design decision is already made in the p
 | 05 | [Store](issues/05-store.md) | 02 | 04 |
 | 06 | [Settings and CLI](issues/06-settings-and-cli.md) | 04, 05 | |
 | 07 | [Docs](issues/07-docs.md) | 06 | |
+| 08 | [Executor shutdown warning on --fast](issues/08-fast-executor-shutdown-warning.md) | | |
 
 ## How to work a task
 
