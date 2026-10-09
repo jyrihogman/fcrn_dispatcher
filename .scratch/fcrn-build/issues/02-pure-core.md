@@ -1,6 +1,6 @@
 # Pure core
 
-Status: ready-for-agent
+Status: resolved
 Blocked by: 01
 TDD: yes
 
@@ -31,3 +31,11 @@ The throwaway prototype `.scratch/fcrn-takehome/prototypes/runtime.py` shows a w
 - `uv run pytest tests/test_droop.py tests/test_battery.py` passes.
 - `droop.py`, `sample.py` and `battery.py` import nothing from the package, and `test_imports.py` passes.
 - The standard check passes.
+
+## Answer
+
+- `droop.py`, `sample.py` and `battery.py` follow the prototype shape. The sizing values arrive as arguments: `advance(state, now, capacity_wh)` and `command(state, power_w, now, capacity_wh, pmax_w)`.
+- `advance` and `command` share one rule: power drops to 0 W when it pushes SoC past 0 or 1. Example: SoC 0.5, then 1 MW for exactly 3600 s, gives SoC 0 and actual 0 W. A clamp check alone missed this case, because SoC landed exactly on 0.
+- The ±Pmax property checks a single large command, and it also checks every step of a random command sequence.
+- The looptime test passes `asyncio.new_event_loop()` to `looptime.patch_event_loop` with a `ty: ignore`, because `ty` wants a `BaseEventLoop`.
+- `capacity_wh` keeps the name from this ticket. The glossary says to avoid "Capacity" for usable energy capacity, so a later task may rename it to `usable_energy_wh`.
